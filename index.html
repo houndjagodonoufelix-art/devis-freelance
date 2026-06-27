@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Devis Freelance Pro</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+</head>
+<body>
+
+  <!-- ÉCRAN AUTH -->
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-box">
+      <div class="auth-logo">
+        <i class="ti ti-file-invoice"></i>
+      </div>
+      <h1 class="auth-title">Devis Freelance Pro</h1>
+      <p class="auth-subtitle">Gérez vos devis professionnellement</p>
+
+      <!-- Onglets -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('connexion')" id="tabConnexion">Connexion</button>
+        <button class="auth-tab" onclick="switchTab('inscription')" id="tabInscription">Inscription</button>
+      </div>
+
+      <!-- Formulaire Connexion -->
+      <div id="formConnexion">
+        <div class="form-group">
+          <label class="label">Email</label>
+          <input type="email" id="loginEmail" placeholder="contact@monentreprise.com">
+        </div>
+        <div class="form-group">
+          <label class="label">Mot de passe</label>
+          <input type="password" id="loginPassword" placeholder="••••••••">
+        </div>
+        <div id="loginError" class="error-msg" style="display:none"></div>
+        <button class="btn-auth" onclick="connexion()">
+          <i class="ti ti-login"></i> Se connecter
+        </button>
+      </div>
+
+      <!-- Formulaire Inscription -->
+      <div id="formInscription" style="display:none">
+        <div class="form-group">
+          <label class="label">Nom de l'entreprise *</label>
+          <input type="text" id="regNom" placeholder="FreelancePro SARL">
+        </div>
+        <div class="form-group">
+          <label class="label">Email *</label>
+          <input type="email" id="regEmail" placeholder="contact@monentreprise.com">
+        </div>
+        <div class="form-group">
+          <label class="label">Mot de passe *</label>
+          <input type="password" id="regPassword" placeholder="Minimum 6 caractères">
+        </div>
+        <div class="form-group">
+          <label class="label">Téléphone</label>
+          <input type="text" id="regTel" placeholder="+229 97 000 000">
+        </div>
+        <div class="form-group">
+          <label class="label">Adresse</label>
+          <input type="text" id="regAdresse" placeholder="Cotonou, Bénin">
+        </div>
+        <div class="form-group">
+          <label class="label">IFU / SIRET</label>
+          <input type="text" id="regIfu" placeholder="12345678901234">
+        </div>
+        <div id="regError" class="error-msg" style="display:none"></div>
+        <button class="btn-auth" onclick="inscription()">
+          <i class="ti ti-user-plus"></i> Créer mon compte
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- APPLI PRINCIPALE -->
+  <div id="appScreen" style="display:none">
+
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="navbar-brand">
+        <i class="ti ti-file-invoice"></i>
+        <span>Devis Freelance Pro</span>
+      </div>
+      <div class="navbar-user">
+        <span id="navEntrepriseName"></span>
+        <button onclick="deconnexion()" class="btn-logout">
+          <i class="ti ti-logout"></i> Déconnexion
+        </button>
+      </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="app-container">
+
+      <!-- Navigation étapes -->
+      <div class="step-nav">
+        <button class="step-btn active" onclick="goStep(0)" id="s0">① Entreprises</button>
+        <button class="step-btn" onclick="goStep(1)" id="s1">② Tâches</button>
+        <button class="step-btn" onclick="goStep(2)" id="s2">③ Template</button>
+        <button class="step-btn" onclick="goStep(3)" id="s3">④ Aperçu</button>
+        <button class="step-btn" onclick="goStep(4)" id="s4">
+          <i class="ti ti-clock-history"></i> Historique
+        </button>
+      </div>
+
+      <!-- STEP 0 : Entreprises -->
+      <div id="step0">
+        <div class="grid2 mb1">
+
+          <!-- Mon entreprise -->
+          <div class="card">
+            <div class="section-title">
+              <i class="ti ti-building"></i> Mon entreprise
+              <span class="badge badge-info">Vous</span>
+            </div>
+            <div class="logo-upload" onclick="document.getElementById('myLogoInput').click()" id="myLogoZone">
+              <img id="myLogoPreview" class="logo-preview" style="display:none"/>
+              <span id="myLogoText"><i class="ti ti-photo"></i><br>Mon logo (coin gauche)</span>
+            </div>
+            <input type="file" id="myLogoInput" accept="image/*" onchange="uploadLogo('myLogo',this)">
+            <div class="form-fields">
+              <div class="form-group">
+                <label class="label">Nom entreprise *</label>
+                <input id="myName" placeholder="FreelancePro SARL" oninput="updatePreview()">
+              </div>
+              <div class="form-group">
+                <label class="label">Email</label>
+                <input id="myEmail" placeholder="contact@monentreprise.com" oninput="updatePreview()">
+              </div>
+              <div class="form-group">
+                <label class="label">Téléphone</label>
+                <input id="myPhone" placeholder="+229 97 000 000" oninput="updatePreview()">
+              </div>
+              <div class="form-group">
+                <label class="label">Adresse</label>
+                <textarea id="myAddress" rows="2" placeholder="Cotonou, Bénin" oninput="updatePreview()"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="label">SIRET / IFU</label>
+                <input id="mySiret" placeholder="12345678901234" oninput="updatePreview()">
+              </div>
+              <button onclick="saveProfile()" class="btn btn-primary w100">
+                <i class="ti ti-device-floppy"></i> Sauvegarder mon profil
+              </button>
+            </div>
+          </div>
+
+          <!-- Client -->
+          <div class="card">
+            <div class="section-title">
+              <i class="ti ti-briefcase"></i> Client
+              <span class="badge badge-warning">Destinataire</span>
+            </div>
+            <div class="logo-upload" onclick="document.getElementById('clientLogoInput').click()" id="clientLogoZone">
+              <img id="clientLogoPreview" class="logo-preview" style="display:none"/>
+              <span id="clientLogoText"><i class="ti ti-photo"></i><br>Logo client (coin droit)</span>
+            </div>
+            <input type="file" id="clientLogoInput" accept="image/*" onchange="uploadLogo('clientLogo',this)">
+            <div class="form-fields">
+              <div class="form-group">
+                <label class="label">Nom entreprise *</label>
+                <input id="clientName" placeholder="Entreprise Client SA" oninput="updatePreview()">
+              </div>
+              <div class="form-group">
+                <label class="label">Email</label>
+                <input id="clientEmail" placeholder="contact@client.com" oninput="updatePreview()">
+              </div>
+              <div class="form-group">
+                <label class="label">Téléphone</label>
+                <input id="clientPhone" placeholder="+229 96 000 000" oninput="updatePreview()">
+              </div>
+              <div class="form-group">
+                <label class="label">Adresse</label>
+                <textarea id="clientAddress" rows="2" placeholder="Porto-Novo, Bénin" oninput="updatePreview()"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="label">Contact (nom)</label>
+                <input id="clientContact" placeholder="M. Jean Dupont" oninput="updatePreview()">
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Infos devis -->
+        <div class="card mb1">
+          <div class="section-title">
+            <i class="ti ti-file-description"></i> Informations du devis
+          </div>
+          <div class="grid3">
+            <div class="form-group">
+              <label class="label">N° de devis</label>
+              <input id="devisNum" placeholder="DEV-2025-001" oninput="updatePreview()">
+            </div>
+            <div class="form-group">
+              <label class="label">Date d'émission</label>
+              <input type="date" id="devisDate" oninput="updatePreview()">
+            </div>
+            <div class="form-group">
+              <label class="label">Date d'expiration</label>
+              <input type="date" id="devisExpiry" oninput="updatePreview()">
+            </div>
+          </div>
+          <div class="form-group mt1">
+            <label class="label">Objet du devis</label>
+            <input id="devisObjet" placeholder="ex: Développement site web vitrine" oninput="updatePreview()">
+          </div>
+        </div>
+
+        <div class="flex-end">
+          <button onclick="goStep(1)" class="btn btn-primary">
+            Suivant : Tâches <i class="ti ti-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 1 : Tâches -->
+      <div id="step1" style="display:none">
+        <div class="card mb1">
+          <div class="section-title">
+            <i class="ti ti-list-check"></i> Tâches & Prestations
+          </div>
+          <div class="task-header">
+            <span>Description</span>
+            <span>Qté</span>
+            <span>Prix unitaire</span>
+            <span>Total</span>
+            <span></span>
+          </div>
+          <div id="taskList"></div>
+          <button onclick="addTask()" class="btn-add-task">
+            <i class="ti ti-plus"></i> Ajouter une tâche
+          </button>
+        </div>
+
+        <div class="card mb1">
+          <div class="section-title">
+            <i class="ti ti-calculator"></i> TVA & Totaux
+          </div>
+          <div class="tva-options">
+            <div class="tva-option selected" id="tva0" onclick="setTVA(0)">0% (Hors taxe)</div>
+            <div class="tva-option" id="tva5" onclick="setTVA(5)">5%</div>
+            <div class="tva-option" id="tva10" onclick="setTVA(10)">10%</div>
+            <div class="tva-option" id="tva18" onclick="setTVA(18)">18%</div>
+            <div class="tva-option" id="tva20" onclick="setTVA(20)">20%</div>
+            <div class="tva-custom">
+              <span>Autre :</span>
+              <input id="customTva" type="number" placeholder="%" onchange="setTVA(parseFloat(this.value)||0)">
+            </div>
+          </div>
+          <div class="totaux">
+            <div class="total-row">
+              <span>Sous-total HT</span><span id="sousTotal">0 FCFA</span>
+            </div>
+            <div class="total-row">
+              <span id="tvaLabel">TVA (0%)</span><span id="tvaAmount">0 FCFA</span>
+            </div>
+            <div class="total-row main">
+              <span>Total TTC</span><span id="totalTTC">0 FCFA</span>
+            </div>
+          </div>
+          <div class="form-group mt1">
+            <label class="label">Devise</label>
+            <select id="currency" onchange="updateTotals()">
+              <option value="FCFA">FCFA (Franc CFA)</option>
+              <option value="€">€ (Euro)</option>
+              <option value="$">$ (Dollar)</option>
+              <option value="MAD">MAD (Dirham)</option>
+              <option value="GHS">GHS (Cedi)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card mb1">
+          <div class="section-title">
+            <i class="ti ti-notes"></i> Notes & Conditions
+          </div>
+          <div class="form-group">
+            <label class="label">Notes / Commentaires</label>
+            <textarea id="devisNotes" rows="3" placeholder="ex: Ce devis est valable 30 jours..." oninput="updatePreview()"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="label">Conditions de paiement</label>
+            <input id="paymentTerms" placeholder="ex: Virement bancaire — 30 jours fin de mois" oninput="updatePreview()">
+          </div>
+        </div>
+
+        <div class="flex-between">
+          <button onclick="goStep(0)" class="btn">
+            <i class="ti ti-arrow-left"></i> Retour
+          </button>
+          <button onclick="goStep(2)" class="btn btn-primary">
+            Suivant : Template <i class="ti ti-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 2 : Template -->
+      <div id="step2" style="display:none">
+        <div class="card mb1">
+          <div class="section-title">
+            <i class="ti ti-layout"></i> Choisir un template
+          </div>
+          <div class="template-grid" id="templateGrid"></div>
+
+          <div class="color-section">
+            <div class="section-title">
+              <i class="ti ti-palette"></i> Couleur principale
+            </div>
+            <p class="color-hint">Choisissez parmi les suggestions ou entrez n'importe quelle couleur.</p>
+            <div id="colorDots" class="color-dots"></div>
+            <div class="color-input-row">
+              <div class="color-input-wrap">
+                <div class="color-swatch-btn" id="swatchBtn" style="background:#4F46E5">
+                  <input type="color" id="nativePicker" value="#4F46E5"
+                    oninput="onNativePicker(this.value)"
+                    onchange="onNativePicker(this.value)">
+                </div>
+                <span class="hash">#</span>
+                <input class="hex-input" id="hexInput" type="text" maxlength="6"
+                  placeholder="4F46E5" value="4F46E5"
+                  oninput="onHexInput(this.value)"
+                  onkeydown="if(event.key==='Enter')applyHex()">
+                <button onclick="applyHex()" class="btn-apply">Appliquer</button>
+              </div>
+              <div class="color-pill" id="colorPreviewPill">
+                <div id="pillSwatch" style="width:14px;height:14px;border-radius:50%;background:#4F46E5"></div>
+                <span id="pillName">Indigo</span>
+                <span id="pillHex" class="pill-hex">#4F46E5</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-between">
+          <button onclick="goStep(1)" class="btn">
+            <i class="ti ti-arrow-left"></i> Retour
+          </button>
+          <button onclick="goStep(3)" class="btn btn-primary">
+            Aperçu du devis <i class="ti ti-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 3 : Aperçu -->
+      <div id="step3" style="display:none">
+        <div class="info-banner mb1">
+          <i class="ti ti-info-circle"></i>
+          Aperçu en temps réel. Cliquez sur "Générer PDF" pour télécharger.
+        </div>
+        <div id="devisPreviewContainer"></div>
+        <div class="flex-between mt1">
+          <button onclick="goStep(2)" class="btn">
+            <i class="ti ti-arrow-left"></i> Retour
+          </button>
+          <div class="flex-gap">
+            <button onclick="saveDevis()" class="btn btn-primary">
+              <i class="ti ti-device-floppy"></i> Sauvegarder
+            </button>
+            <button onclick="exportPDF()" class="btn btn-success">
+              <i class="ti ti-download"></i> Générer PDF
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 : Historique -->
+      <div id="step4" style="display:none">
+        <div class="stats-row" id="histStats">
+          <div class="stat-card">
+            <div class="stat-label">Total devis</div>
+            <div class="stat-value" id="statCount">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Montant total TTC</div>
+            <div class="stat-value" id="statTotal">0 FCFA</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Client principal</div>
+            <div class="stat-value" id="statTop">—</div>
+          </div>
+        </div>
+
+        <div class="search-bar mb1">
+          <div class="search-input-wrap">
+            <i class="ti ti-search"></i>
+            <input id="histSearch" placeholder="Rechercher par nom de client..." oninput="renderHistory()">
+          </div>
+          <select id="histSort" onchange="renderHistory()">
+            <option value="date_desc">Plus récent d'abord</option>
+            <option value="date_asc">Plus ancien d'abord</option>
+            <option value="total_desc">Montant décroissant</option>
+            <option value="total_asc">Montant croissant</option>
+            <option value="client_az">Client A → Z</option>
+          </select>
+          <button onclick="loadHistory()" class="btn" title="Actualiser">
+            <i class="ti ti-refresh"></i>
+          </button>
+        </div>
+
+        <div id="histList"></div>
+
+        <!-- Modal aperçu -->
+        <div id="previewModal" style="display:none" class="modal-overlay">
+          <div class="modal-box">
+            <div class="modal-header">
+              <span>Aperçu du devis</span>
+              <div class="flex-gap">
+                <button onclick="downloadFromModal()" class="btn btn-success">
+                  <i class="ti ti-download"></i> PDF
+                </button>
+                <button onclick="closeModal()" class="btn">
+                  <i class="ti ti-x"></i>
+                </button>
+              </div>
+            </div>
+            <div id="modalPreviewContent"></div>
+          </div>
+        </div>
+
+        <div class="flex-between mt1">
+          <span class="hist-count" id="histCount"></span>
+          <button onclick="nouveauDevis()" class="btn btn-primary">
+            <i class="ti ti-plus"></i> Nouveau devis
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
