@@ -6,7 +6,6 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const devisRoutes = require('./routes/devis');
 const profileRoutes = require('./routes/profile');
-const pdfRoutes = require('./routes/pdf');
 const app = express();
 
 // Middlewares
@@ -21,7 +20,6 @@ app.use(express.static(path.join(__dirname, '..')));
 app.use('/api/auth', authRoutes);
 app.use('/api/devis', devisRoutes);
 app.use('/api/profile', profileRoutes);
-app.use('/api/pdf', pdfRoutes);
 // Route principale
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'index.html'));

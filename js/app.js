@@ -1253,42 +1253,70 @@ async function exportFromModal() {
     paymentTerms: modalDevis.conditions_paiement
   });
 
-  const clientName = modalDevis.client_nom || 'devis';
   showToast('Génération du PDF...', 'info');
 
   try {
-    const res = await fetch(`${API_URL}/pdf/generer`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + state.token
-      },
-      body: JSON.stringify({
-        html,
-        filename: `devis-${clientName.replace(/\s+/g, '-')}`
-      })
+    const el = document.createElement('div');
+    el.innerHTML = html;
+    el.style.cssText = `
+      position: fixed;
+      left: -9999px;
+      top: 0;
+      width: 794px;
+      background: white;
+      padding: 20px;
+    `;
+    document.body.appendChild(el);
+
+    await new Promise(r => setTimeout(r, 300));
+
+    const canvas = await html2canvas(el, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      width: 794,
+      windowWidth: 794
     });
 
-    if (!res.ok) {
-      showToast('Erreur génération PDF.', 'danger');
-      return;
+    document.body.removeChild(el);
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = canvas.width;
+    const imgHeight = canvas.height;
+    const ratio = imgWidth / imgHeight;
+    const finalHeight = pdfWidth / ratio;
+
+    if (finalHeight <= pdfHeight) {
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, finalHeight);
+    } else {
+      let position = 0;
+      let remainingHeight = finalHeight;
+      let page = 0;
+      while (remainingHeight > 0) {
+        if (page > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, -position, pdfWidth, finalHeight);
+        position += pdfHeight;
+        remainingHeight -= pdfHeight;
+        page++;
+      }
     }
 
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `devis-${clientName.replace(/\s+/g, '-')}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-
+    const clientName = modalDevis.client_nom || 'devis';
+    pdf.save(`devis-${clientName.replace(/\s+/g, '-')}.pdf`);
     showToast('PDF téléchargé !', 'success');
 
   } catch (e) {
     console.error(e);
-    showToast('Impossible de générer le PDF.', 'danger');
+    showToast('Erreur génération PDF.', 'danger');
   }
 }
 
@@ -1379,43 +1407,69 @@ async function supprimerDevis(id) {
 // ===== EXPORT PDF =====
 async function exportPDF() {
   const clientName = g('clientName') || 'devis';
-  const html = buildDevisHTML();
-
   showToast('Génération du PDF...', 'info');
 
   try {
-    const res = await fetch(`${API_URL}/pdf/generer`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + state.token
-      },
-      body: JSON.stringify({
-        html,
-        filename: `devis-${clientName.replace(/\s+/g, '-')}`
-      })
+    const el = document.createElement('div');
+    el.innerHTML = buildDevisHTML();
+    el.style.cssText = `
+      position: fixed;
+      left: -9999px;
+      top: 0;
+      width: 794px;
+      background: white;
+      padding: 20px;
+    `;
+    document.body.appendChild(el);
+
+    await new Promise(r => setTimeout(r, 300));
+
+    const canvas = await html2canvas(el, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      width: 794,
+      windowWidth: 794
     });
 
-    if (!res.ok) {
-      showToast('Erreur génération PDF.', 'danger');
-      return;
+    document.body.removeChild(el);
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = canvas.width;
+    const imgHeight = canvas.height;
+    const ratio = imgWidth / imgHeight;
+    const finalHeight = pdfWidth / ratio;
+
+    if (finalHeight <= pdfHeight) {
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, finalHeight);
+    } else {
+      let position = 0;
+      let remainingHeight = finalHeight;
+      let page = 0;
+      while (remainingHeight > 0) {
+        if (page > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, -position, pdfWidth, finalHeight);
+        position += pdfHeight;
+        remainingHeight -= pdfHeight;
+        page++;
+      }
     }
 
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `devis-${clientName.replace(/\s+/g, '-')}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-
+    pdf.save(`devis-${clientName.replace(/\s+/g, '-')}.pdf`);
     showToast('PDF téléchargé !', 'success');
 
   } catch (e) {
     console.error(e);
-    showToast('Impossible de générer le PDF.', 'danger');
+    showToast('Erreur génération PDF.', 'danger');
   }
 }
 
