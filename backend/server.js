@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
+const initDatabase = require('./init-db');
 
 const authRoutes = require('./routes/auth');
 const devisRoutes = require('./routes/devis');
@@ -27,8 +28,9 @@ app.get('/', (req, res) => {
 
 // Démarrage du serveur
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`✅ Serveur démarré sur http://localhost:${PORT}`);
+  await initDatabase();
 });
 // Ajoute ceci à la fin de ton server.js
 app.use(express.static('frontend')); // Sert les fichiers statiques
