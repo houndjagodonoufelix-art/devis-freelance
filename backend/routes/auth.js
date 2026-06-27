@@ -10,26 +10,22 @@ router.post('/inscription', async (req, res) => {
   try {
     const { nom, email, mot_de_passe, telephone, adresse, ifu } = req.body;
 
-    // Vérifier si l'email existe déjà
-    const [existing] = await db.query(
-      'SELECT id FROM entreprises WHERE email = ?', [email]
+    const existing = await db.query(
+      'SELECT id FROM entreprises WHERE email = $1', [email]
     );
-    if (existing.length > 0) {
+    if (existing.rows.length > 0) {
       return res.status(400).json({ message: 'Cet email est déjà utilisé.' });
     }
 
-    // Chiffrer le mot de passe
     const hash = await bcrypt.hash(mot_de_passe, 10);
 
-    // Insérer l'entreprise
-    const [result] = await db.query(
-      'INSERT INTO entreprises (nom, email, mot_de_passe, telephone, adresse, ifu) VALUES (?, ?, ?, ?, ?, ?)',
+    const result = await db.query(
+      'INSERT INTO entreprises (nom, email, mot_de_passe, telephone, adresse, ifu) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
       [nom, email, hash, telephone, adresse, ifu]
     );
 
-    // Créer le token
     const token = jwt.sign(
-      { id: result.insertId, email },
+      { id: result.rows[0].id, email },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -37,7 +33,7 @@ router.post('/inscription', async (req, res) => {
     res.status(201).json({
       message: 'Compte créé avec succès !',
       token,
-      entreprise: { id: result.insertId, nom, email }
+      entreprise: { id: result.rows[0].id, nom, email }
     });
 
   } catch (error) {
@@ -51,23 +47,19 @@ router.post('/connexion', async (req, res) => {
   try {
     const { email, mot_de_passe } = req.body;
 
-    // Chercher l'entreprise
-    const [rows] = await db.query(
-      'SELECT * FROM entreprises WHERE email = ?', [email]
+    const rows = await db.query(
+      'SELECT * FROM entreprises WHERE email = $1', [email]
     );
-    if (rows.length === 0) {
+    if (rows.rows.length === 0) {
       return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
     }
 
-    const entreprise = rows[0];
-
-    // Vérifier le mot de passe
+    const entreprise = rows.rows[0];
     const valid = await bcrypt.compare(mot_de_passe, entreprise.mot_de_passe);
     if (!valid) {
       return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
     }
 
-    // Créer le token
     const token = jwt.sign(
       { id: entreprise.id, email: entreprise.email },
       process.env.JWT_SECRET,

@@ -4,7 +4,6 @@ const db = require('../db');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-// Middleware vérification token
 function verifierToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -18,27 +17,25 @@ function verifierToken(req, res, next) {
   }
 }
 
-// OBTENIR le profil
 router.get('/', verifierToken, async (req, res) => {
   try {
-    const [rows] = await db.query(
-      'SELECT id, nom, email, telephone, adresse, ifu, logo FROM entreprises WHERE id = ?',
+    const result = await db.query(
+      'SELECT id, nom, email, telephone, adresse, ifu, logo FROM entreprises WHERE id = $1',
       [req.entreprise.id]
     );
-    if (rows.length === 0) return res.status(404).json({ message: 'Entreprise introuvable.' });
-    res.json(rows[0]);
+    if (result.rows.length === 0) return res.status(404).json({ message: 'Entreprise introuvable.' });
+    res.json(result.rows[0]);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Erreur serveur.' });
   }
 });
 
-// METTRE À JOUR le profil
 router.put('/', verifierToken, async (req, res) => {
   try {
     const { nom, telephone, adresse, ifu, logo } = req.body;
     await db.query(
-      'UPDATE entreprises SET nom=?, telephone=?, adresse=?, ifu=?, logo=? WHERE id=?',
+      'UPDATE entreprises SET nom=$1, telephone=$2, adresse=$3, ifu=$4, logo=$5 WHERE id=$6',
       [nom, telephone, adresse, ifu, logo, req.entreprise.id]
     );
     res.json({ message: 'Profil mis à jour avec succès !' });
